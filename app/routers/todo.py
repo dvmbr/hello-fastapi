@@ -1,45 +1,12 @@
-from fastapi import FastAPI, HTTPException, Response, status, Query
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, HTTPException, Response, status, Query
 
-app = FastAPI(title="TODO API", description="Simple TODO API", version="1.0.0")
+from app.models.todo import TodoCreate, TodoUpdate, TodoResponse
+from app.storage.todo import todos, todo_id_counter
 
-# Define Models
-
-
-class TodoCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=100)
-    description: str | None = Field(default=None, max_length=500)
-    completed: bool = False
+router = APIRouter()
 
 
-class TodoUpdate(BaseModel):
-    title: str | None = Field(default=None, min_length=1, max_length=100)
-    description: str | None = Field(default=None, max_length=500)
-    completed: bool | None = None
-
-
-class TodoResponse(BaseModel):
-    id: int
-    title: str
-    description: str | None
-    completed: bool
-
-
-# In-memory Storage
-
-todos: dict[int, dict] = {}
-todo_id_counter = 0
-
-
-# API Routes
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello", "docs": "/docs"}
-
-
-@app.get("/todos", response_model=list[TodoResponse])
+@router.get("/todos", response_model=list[TodoResponse])
 async def list_todos(
     completed: bool | None = None,
     # 음수 입력 방지
@@ -66,7 +33,7 @@ async def list_todos(
     return result[skip : skip + limit]
 
 
-@app.get("/todos/{todo_id}", response_model=TodoResponse)
+@router.get("/todos/{todo_id}", response_model=TodoResponse)
 async def get_todo(todo_id: int):
     if todo_id not in todos:
         raise HTTPException(
@@ -76,7 +43,7 @@ async def get_todo(todo_id: int):
     return todos[todo_id]
 
 
-@app.post("/todos", response_model=TodoResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/todos", response_model=TodoResponse, status_code=status.HTTP_201_CREATED)
 async def create_todo(todo: TodoCreate):
     global todo_id_counter
     todo_id_counter += 1
@@ -92,7 +59,7 @@ async def create_todo(todo: TodoCreate):
     return new_todo
 
 
-@app.patch("/todos/{todo_id}", response_model=TodoResponse)
+@router.patch("/todos/{todo_id}", response_model=TodoResponse)
 async def update_todo(todo_id: int, todo: TodoUpdate):
     if todo_id not in todos:
         raise HTTPException(
@@ -111,7 +78,7 @@ async def update_todo(todo_id: int, todo: TodoUpdate):
     return stored_todo
 
 
-@app.delete("/todos/{todo_id}")
+@router.delete("/todos/{todo_id}")
 async def delete_todo(todo_id: int):
     if todo_id not in todos:
         raise HTTPException(
