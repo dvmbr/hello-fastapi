@@ -1,0 +1,9 @@
+{
+  "python.analysis.autoImportCompletions": false,
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.addMissingImports": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  }
+}
