@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.models.user import UserCreate, UserResponse
-from app.storage.user import get_user_db, user_id_counter
+from app.storage.user import auto_increment_user_id, get_user_db
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -34,13 +34,11 @@ async def create_user(user_data: UserCreate, db: dict = Depends(get_user_db)):
             - `street`: 상세 주소 (예: Teheran-ro 123)
             - `zip_code`: 우편번호 (예: 06134)
     - 반환되는 정보에는 `id`, `email`, `name`, `role`, `profile`, `created_at`이 포함됩니다. 비밀번호는 반환되지 않습니다.
-    - 이메일이 이미 존재하는 경우 400 Bad Request 에러가 발생합니다.
     """
-    global user_id_counter
-    user_id_counter += 1
+    user_id = auto_increment_user_id()
 
     new_user = {
-        "id": user_id_counter,
+        "id": user_id,
         "email": user_data.email,
         "name": user_data.name,
         "role": user_data.role,
@@ -50,7 +48,7 @@ async def create_user(user_data: UserCreate, db: dict = Depends(get_user_db)):
         "created_at": datetime.now(),
     }
 
-    db[user_id_counter] = new_user
+    db[user_id] = new_user
     return new_user
 
 
@@ -88,7 +86,11 @@ async def get_user(user_id: int, db: dict = Depends(get_user_db)):
         422: {"description": "입력 데이터 유효성 검사 실패"},
     },
 )
-async def list_users(skip: int = 0, limit: int = 10, db: dict = Depends(get_user_db)):
+async def list_users(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    db: dict = Depends(get_user_db),
+):
     """
     사용자 목록을 조회합니다.
 

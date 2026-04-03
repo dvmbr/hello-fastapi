@@ -85,6 +85,7 @@ class UserResponse(BaseModel):
     profile: Profile | None = Field(None, description="사용자 프로필 정보입니다.")
     created_at: datetime = Field(..., description="사용자 생성 일시입니다.")
 
+    # model_config = {"from_attributes": True}
     # ORM 객체(속성 기반)를 Pydantic 모델로 직접 변환 허용
     # SQLAlchemy 등 ORM 인스턴스를 response_model로 쓸 때 필요
     #

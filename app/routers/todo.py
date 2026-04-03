@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 
 from app.models.todo import TodoCreate, TodoResponse, TodoUpdate
-from app.storage.todo import todo_id_counter, todos
+from app.storage.todo import auto_increment_todo_id, get_todo_db
 
 router = APIRouter(prefix="/todos", tags=["todos"])
 
@@ -20,6 +20,7 @@ async def list_todos(
     # 음수 입력 방지
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=10, ge=1, le=100),
+    db: dict = Depends(get_todo_db),
 ):
     """
     할 일 목록을 조회합니다.
@@ -34,7 +35,7 @@ async def list_todos(
     - `completed`가 true 또는 false가 아닌 경우 422 Unprocessable Entity 에러가 발생합니다.
     - `completed`가 제공되지 않으면 모든 할 일이 반환됩니다.
     """
-    result = list(todos.values())
+    result = list(db.values())
 
     # /todos?completed=true || /todos?completed=false
     if completed is not None:
@@ -63,7 +64,7 @@ async def list_todos(
         404: {"description": "할 일을 찾을 수 없음"},
     },
 )
-async def get_todo(todo_id: int):
+async def get_todo(todo_id: int, db: dict = Depends(get_todo_db)):
     """
     할 일 ID를 기반으로 할 일의 정보를 조회합니다.
 
@@ -71,12 +72,12 @@ async def get_todo(todo_id: int):
     - 반환되는 정보에는 `id`, `title`, `description`, `completed`가 포함됩니다.
     - `todo_id`가 존재하지 않을 경우 404 Not Found 에러가 발생합니다.
     """
-    if todo_id not in todos:
+    if todo_id not in db:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"{todo_id} is not found"
         )
 
-    return todos[todo_id]
+    return db[todo_id]
 
 
 @router.post(
@@ -89,7 +90,7 @@ async def get_todo(todo_id: int):
         422: {"description": "입력 데이터 유효성 검사 실패"},
     },
 )
-async def create_todo(todo: TodoCreate):
+async def create_todo(todo: TodoCreate, db: dict = Depends(get_todo_db)):
     """
     새로운 할 일을 생성합니다.
 
@@ -98,17 +99,16 @@ async def create_todo(todo: TodoCreate):
     - `completed`: 할 일의 완료 여부 (기본값: False)
     - 반환되는 정보에는 `id`, `title`, `description`, `completed`가 포함됩니다.
     """
-    global todo_id_counter
-    todo_id_counter += 1
+    todo_id = auto_increment_todo_id()
 
     new_todo = {
-        "id": todo_id_counter,
+        "id": todo_id,
         "title": todo.title,
         "description": todo.description,
         "completed": todo.completed,
     }
 
-    todos[todo_id_counter] = new_todo
+    db[todo_id] = new_todo
     return new_todo
 
 
@@ -121,7 +121,7 @@ async def create_todo(todo: TodoCreate):
         404: {"description": "할 일을 찾을 수 없음"},
     },
 )
-async def update_todo(todo_id: int, todo: TodoUpdate):
+async def update_todo(todo_id: int, todo: TodoUpdate, db: dict = Depends(get_todo_db)):
     """
     할 일 ID를 기반으로 할 일을 업데이트합니다.
 
@@ -132,12 +132,12 @@ async def update_todo(todo_id: int, todo: TodoUpdate):
     - 반환되는 정보에는 `id`, `title`, `description`, `completed`가 포함됩니다.
     - `todo_id`가 존재하지 않을 경우 404 Not Found 에러가 발생합니다.
     """
-    if todo_id not in todos:
+    if todo_id not in db:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"{todo_id} is not found"
         )
 
-    stored_todo = todos[todo_id]
+    stored_todo = db[todo_id]
 
     # 기본 dump             : 모든 필드 포함
     # exclude_unset=True    : 입력된 필드만 포함
@@ -158,7 +158,7 @@ async def update_todo(todo_id: int, todo: TodoUpdate):
         404: {"description": "할 일을 찾을 수 없음"},
     },
 )
-async def delete_todo(todo_id: int):
+async def delete_todo(todo_id: int, db: dict = Depends(get_todo_db)):
     """
     할 일 ID를 기반으로 할 일을 삭제합니다.
 
@@ -166,10 +166,10 @@ async def delete_todo(todo_id: int):
     - 반환되는 정보에는 `id`, `title`, `description`, `completed`가 포함됩니다.
     - `todo_id`가 존재하지 않을 경우 404 Not Found 에러가 발생합니다.
     """
-    if todo_id not in todos:
+    if todo_id not in db:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"{todo_id} is not found"
         )
 
-    del todos[todo_id]
+    del db[todo_id]
     return Response(status_code=status.HTTP_204_NO_CONTENT)
