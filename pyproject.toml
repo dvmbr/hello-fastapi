@@ -8,5 +8,6 @@ dependencies = [
     "aiosqlite>=0.22.1",
     "fastapi[standard]>=0.135.2",
     "greenlet>=3.3.2",
+    "pydantic-settings>=2.13.1",
     "sqlmodel>=0.0.38",
 ]

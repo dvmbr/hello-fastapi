@@ -298,6 +298,7 @@ dependencies = [
     { name = "aiosqlite" },
     { name = "fastapi", extra = ["standard"] },
     { name = "greenlet" },
+    { name = "pydantic-settings" },
     { name = "sqlmodel" },
 ]
 
@@ -306,6 +307,7 @@ requires-dist = [
     { name = "aiosqlite", specifier = ">=0.22.1" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.135.2" },
     { name = "greenlet", specifier = ">=3.3.2" },
+    { name = "pydantic-settings", specifier = ">=2.13.1" },
     { name = "sqlmodel", specifier = ">=0.0.38" },
 ]
 

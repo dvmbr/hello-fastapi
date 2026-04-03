@@ -118,10 +118,11 @@ async def create_job_post(
             detail=f"company {payload.company_id} is not found",
         )
 
-    job_post = JobPost(**payload.model_dump())
-    session.add(job_post)
-    await session.flush()
-    await session.refresh(job_post)
+    async with session.begin():
+        job_post = JobPost(**payload.model_dump())
+        session.add(job_post)
+        await session.flush()
+        await session.refresh(job_post)
 
     return job_post
 
@@ -147,12 +148,14 @@ async def delete_job_post(
     - `job_post_id`: 삭제할 채용 공고의 내부 ID입니다. 보통 생성 응답의 `id`를 사용합니다.
     - 성공적으로 삭제되면 204 No Content 응답이 반환됩니다. `job_post_id`가 존재하지 않을 경우 404 Not Found 에러가 발생합니다.
     """
-    job_post = await session.get(JobPost, job_post_id)
+    async with session.begin():
+        job_post = await session.get(JobPost, job_post_id)
 
-    if job_post is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"{job_post_id} is not found"
-        )
+        if job_post is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"{job_post_id} is not found",
+            )
 
-    await session.delete(job_post)
+        await session.delete(job_post)
     return None

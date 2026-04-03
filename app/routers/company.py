@@ -94,9 +94,10 @@ async def create_company(
     - `name`: 회사 이름입니다.
     - 반환되는 정보에는 `id`, `name`, `created_at`이 포함됩니다.
     """
-    company = Company(**payload.model_dump())
-    session.add(company)
-    await session.flush()
-    await session.refresh(company)
+    async with session.begin():
+        company = Company(**payload.model_dump())
+        session.add(company)
+        await session.flush()
+        await session.refresh(company)
 
     return company

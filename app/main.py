@@ -1,18 +1,17 @@
-import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.database import create_db_and_tables
+from app.config import settings
+from app.database import close_db_connections, create_db_and_tables
 from app.routers import company, job_post, todo, user
-
-DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await create_db_and_tables()
     yield
+    await close_db_connections()
 
 
 app = FastAPI(
@@ -57,8 +56,8 @@ app = FastAPI(
             "description": "채용 공고 관련 API 엔드포인트",
         },
     ],
-    docs_url="/docs" if DEBUG else None,  # DEBUG 모드일 때만 Swagger UI 활성화
-    redoc_url="/redoc" if DEBUG else None,  # DEBUG 모드일 때만 ReDoc 활성화
+    docs_url="/docs" if settings.debug else None,  # DEBUG 모드일 때만 Swagger UI 활성화
+    redoc_url="/redoc" if settings.debug else None,  # DEBUG 모드일 때만 ReDoc 활성화
 )
 
 
