@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.models.todo import TodoCreate, TodoResponse, TodoUpdate
 from app.storage.todo import auto_increment_todo_id, get_todo_db
@@ -172,4 +172,4 @@ async def delete_todo(todo_id: int, db: dict = Depends(get_todo_db)):
         )
 
     del db[todo_id]
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return None

@@ -127,3 +127,4 @@ async def delete_user(user_id: int, db: dict = Depends(get_user_db)):
         )
 
     del db[user_id]
+    return None
