@@ -1,0 +1,59 @@
+erDiagram
+    MEMBERS ||--o{ SOCIAL_ACCOUNTS : has
+    COMPANIES ||--o{ JOB_POSTS : owns
+    JOB_POSTS ||--o{ JOB_POST_TAGS : has
+    TAGS ||--o{ JOB_POST_TAGS : tagged_by
+    MEMBERS ||--o{ APPLICATIONS : submits
+    JOB_POSTS ||--o{ APPLICATIONS : receives
+
+    MEMBERS {
+        int id PK
+        string email UK
+        string name
+        string role
+        int age
+        datetime created_at
+    }
+
+    COMPANIES {
+        int id PK
+        string name
+        string business_number UK
+        datetime created_at
+    }
+
+    SOCIAL_ACCOUNTS {
+        int id PK
+        int member_id FK
+        string provider
+        string provider_user_id
+        datetime created_at
+    }
+
+    JOB_POSTS {
+        int id PK
+        int company_id FK
+        string title
+        string description
+        string status
+        datetime created_at
+    }
+
+    TAGS {
+        int id PK
+        string name UK
+    }
+
+    JOB_POST_TAGS {
+        int job_post_id PK, FK
+        int tag_id PK, FK
+    }
+
+    APPLICATIONS {
+        int id PK
+        int member_id FK
+        int job_post_id FK
+        string status
+        string cover_letter
+        datetime applied_at
+    }
