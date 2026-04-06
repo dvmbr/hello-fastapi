@@ -23,20 +23,6 @@ class CompanyUpdate(SQLModel):
     business_number: str | None = None
 
 
-class CompanyRead(SQLModel):
-    id: int
-    name: str
-    business_number: str
-    created_at: datetime
-    """
-    회사 응답 모델
-    - id: 회사 고유 ID
-    - name: 회사명
-    - business_number: 사업자등록번호
-    - created_at: 생성일시 (UTC)
-    """
-
-
 # API 응답 전용 모델
 class CompanyResponse(SQLModel):
     id: int

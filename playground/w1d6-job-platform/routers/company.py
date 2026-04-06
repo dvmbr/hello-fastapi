@@ -54,7 +54,9 @@ async def list_companies(
     session: AsyncSession = Depends(get_session),
 ):
     total = await session.scalar(select(func.count()).select_from(Company))
-    statement = select(Company).offset(offset).limit(limit)
+    statement = (
+        select(Company).order_by(Company.created_at.desc()).offset(offset).limit(limit)
+    )
     result = await session.execute(statement)
     companies = result.scalars().all()
     return CompanyListResponse(total=total, items=companies)

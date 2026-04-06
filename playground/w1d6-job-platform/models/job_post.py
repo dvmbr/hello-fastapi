@@ -19,3 +19,24 @@ class JobPost(SQLModel, table=True):
     description: str = Field(min_length=1, max_length=2000)
     status: JobPostStatus = Field(default=JobPostStatus.OPEN)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class JobPostCreate(SQLModel):
+    company_id: int
+    title: str
+    description: str
+
+
+class JobPostUpdate(SQLModel):
+    title: str | None = None
+    description: str | None = None
+    status: JobPostStatus | None = None
+
+
+class JobPostResponse(SQLModel):
+    id: int
+    company_id: int
+    title: str
+    description: str
+    status: JobPostStatus
+    created_at: datetime
