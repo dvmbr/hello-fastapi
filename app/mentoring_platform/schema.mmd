@@ -1,0 +1,59 @@
+erDiagram
+    MEMBERS ||--o{ SOCIAL_ACCOUNTS : has
+    MENTORS ||--o{ MENTORING_POSTS : owns
+    MENTORING_POSTS ||--o{ MENTORING_POST_TOPICS : has
+    TOPICS ||--o{ MENTORING_POST_TOPICS : tagged_by
+    MEMBERS ||--o{ MENTORING_REQUESTS : submits
+    MENTORING_POSTS ||--o{ MENTORING_REQUESTS : receives
+
+    MEMBERS {
+        int id PK
+        string email UK
+        string name
+        string role
+        int age
+        datetime created_at
+    }
+
+    MENTORS {
+        int id PK
+        string name
+        string business_number UK
+        datetime created_at
+    }
+
+    SOCIAL_ACCOUNTS {
+        int id PK
+        int member_id FK
+        string provider
+        string provider_user_id
+        datetime created_at
+    }
+
+    MENTORING_POSTS {
+        int id PK
+        int mentor_id FK
+        string title
+        string description
+        string status
+        datetime created_at
+    }
+
+    TOPICS {
+        int id PK
+        string name UK
+    }
+
+    MENTORING_POST_TOPICS {
+        int mentoring_post_id PK, FK
+        int topic_id PK, FK
+    }
+
+    MENTORING_REQUESTS {
+        int id PK
+        int member_id FK
+        int mentoring_post_id FK
+        string status
+        string message
+        datetime requested_at
+    }
