@@ -25,6 +25,7 @@ class Member(SQLModel, table=True):
     name: str = Field(min_length=1, max_length=50)
     role: MemberRole = Field(default=MemberRole.BASIC)
     age: int = Field(ge=18)
+    password: str = Field(min_length=8, max_length=128, description="hashed password")
     created_at: datetime | None = Field(
         default=None,
         sa_column=Column(

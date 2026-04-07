@@ -1,7 +1,7 @@
 ## 서버 실행
 
 ```sh
-$ uv run uvicorn app.main:app --reload
+$ DEBUG=true uv run uvicorn app.main:app --reload
 ```
 
 `http://localhost:8000`에서 서버가 실행됩니다.
