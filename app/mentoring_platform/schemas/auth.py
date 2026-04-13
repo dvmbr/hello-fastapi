@@ -11,13 +11,12 @@ from pydantic import (
 from app.mentoring_platform.models.member import MemberRole
 
 
-class MemberValidatorMixin(BaseModel):
+class ValidatorMixin(BaseModel):
     email: EmailStr | None = Field(default=None)
     password: str | None = Field(default=None, min_length=8, max_length=128)
     name: str | None = Field(default=None, min_length=1, max_length=50)
     role: MemberRole | None = Field(default=None)
-    age: int | None = Field(default=None, ge=18)
-    is_active: bool | None = Field(default=None)
+    age: int | None = Field(default=None)
 
     @field_validator("email")
     @classmethod
@@ -66,26 +65,36 @@ class MemberValidatorMixin(BaseModel):
         return self
 
 
-class MemberCreate(MemberValidatorMixin):
+class MemberRegister(ValidatorMixin):
+    # 회원 가입에 필요한 필드들을 정의합니다.
     email: EmailStr
     password: str
     name: str
     role: MemberRole = Field(default=MemberRole.BASIC)
     age: int = Field(ge=18)
-    is_active: bool = Field(default=True)
+
+
+class MemberLogin(BaseModel):
+    # 로그인에 필요한 필드들을 정의합니다.
+    email: EmailStr
+    password: str
+
+
+class Token(BaseModel):
+    # 토큰 정보를 정의합니다.
+    access_token: str
+    token_type: str = "bearer"
 
 
 class MemberRead(BaseModel):
-    model_config = ConfigDict(
-        from_attributes=True
-    )  # SQLAlchemy 모델의 속성에서 데이터를 읽어올 수 있도록 설정합니다.
+    # 회원 정보를 읽기 위한 모델입니다. (비밀번호 제외)
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     email: EmailStr
     name: str
     role: MemberRole
     age: int
-    is_active: bool
 
     @computed_field
     @property
@@ -93,5 +102,6 @@ class MemberRead(BaseModel):
         return f"{self.name} ({self.role.value})"
 
 
-class MemberUpdate(MemberValidatorMixin):
+class MemberUpdate(ValidatorMixin):
+    # 회원 정보를 업데이트하기 위한 모델입니다. (업데이트할 필드만 포함)
     pass
